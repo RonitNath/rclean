@@ -22,7 +22,15 @@ fn find_cargo_directories(dir: PathBuf, pool: &ThreadPool) {
         if let Ok(entry) = entry {
             let path = entry.path();
             if path.is_dir() {
-                if path.join("Cargo.toml").is_file() {
+                if path.join("node_modules").exists() {
+                    // delete node_modules
+                    println!("Deleting {:?}", path.join("node_modules"));
+                    
+                    pool.execute(move || {
+                        fs::remove_dir_all(path.join("node_modules"))
+                            .expect("Failed to delete node_modules");
+                    });
+                } else if path.join("Cargo.toml").is_file() {
                     let dir_clone = path.clone();
                     pool.execute(move || {
                         run_cargo_clean(dir_clone);
